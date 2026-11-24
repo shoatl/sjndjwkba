@@ -7,6 +7,8 @@
 //
 // Level 1 is push only. The SMS fallback switch shows for Level 2 and 3.
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../../core/auth/session.dart';
@@ -185,12 +187,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (context, _) {
         final user = widget.session.user;
         return Scaffold(
-          backgroundColor: background,
+          backgroundColor: scheme.surface,
           appBar: AppBar(title: const Text('Profile')),
           body: user == null
               ? const SizedBox.shrink()
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(15, 16, 15, 28),
+              : Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [scheme.surfaceContainerHighest.withAlpha(105), scheme.surface, scheme.surface],
+                    ),
+                  ),
+                  child: ListView(
+                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 32),
                   children: [
                     const SectionHeading(eyebrow: 'Account', title: 'Profile'),
                     const SizedBox(height: 14),
@@ -230,6 +240,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
+              ),
         );
       },
     );
@@ -396,7 +407,14 @@ class _AccountCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              PersonAvatar(name: user.name, size: 56),
+              Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: scheme.primary.withAlpha(150), width: 1.5),
+                ),
+                child: PersonAvatar(name: user.name, size: 60),
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -410,9 +428,11 @@ class _AccountCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      user.role.label,
-                      style: text.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
+                      user.role.label.toUpperCase(),
+                      style: text.labelSmall?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.0,
                       ),
                     ),
                   ],
