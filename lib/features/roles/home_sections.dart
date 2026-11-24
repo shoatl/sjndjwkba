@@ -22,6 +22,7 @@ import '../../shared/widgets/metric_tile.dart';
 import '../../shared/widgets/sheet_helper.dart';
 import '../../shared/widgets/top_chrome.dart';
 import '../../shared/widgets/drainage_system_panel.dart';
+import '../../shared/widgets/interactive_drainage_view.dart';
 import 'home_controller.dart';
 
 /// Header + pull-to-refresh + loading, around a list of body widgets.
@@ -75,7 +76,17 @@ class HomeScaffold extends StatelessWidget {
                         child: ListView(
                           physics: const AlwaysScrollableScrollPhysics(),
                           padding: const EdgeInsets.fromLTRB(15, 16, 15, 24),
-                          children: bodyBuilder(context),
+                          children: [
+                            Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(maxWidth: 1120),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: bodyBuilder(context),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
               ),
@@ -192,6 +203,12 @@ class HomeGaugeCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         DrainageSystemPanel(
+          waterPercent: controller.node?.waterLevelPercent,
+          stage: stage,
+          isStale: stale,
+        ),
+        const SizedBox(height: 14),
+        InteractiveDrainageView(
           waterPercent: controller.node?.waterLevelPercent,
           stage: stage,
           isStale: stale,
