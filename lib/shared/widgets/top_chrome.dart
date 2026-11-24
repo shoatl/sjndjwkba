@@ -8,8 +8,6 @@
 // and from context.status for the connection dot. No logos: the brand
 // mark is a plain icon.
 
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
