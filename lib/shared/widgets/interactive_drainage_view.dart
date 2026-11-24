@@ -49,7 +49,7 @@ class _InteractiveDrainageViewState extends State<InteractiveDrainageView> {
               behavior: HitTestBehavior.opaque,
               onPanUpdate: (details) => setState(() {
                 _yaw += details.delta.dx * 0.009;
-                _pitch = (_pitch - details.delta.dy * 0.006).clamp(-0.12, 0.82);
+                _pitch = (_pitch - details.delta.dy * 0.006).clamp(-0.12, 0.82).toDouble();
               }),
               child: CustomPaint(
                 painter: _Channel3DPainter(
@@ -118,7 +118,7 @@ class _Channel3DPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width * 0.5, size.height * 0.54);
-    final scale = math.min(size.width * 0.34, size.height * 0.78);
+    final scale = math.min(size.width * 0.34, size.height * 0.78).toDouble();
     Offset project(double x, double y, double z) {
       final cy = math.cos(yaw), sy = math.sin(yaw);
       final cp = math.cos(pitch), sp = math.sin(pitch);
@@ -157,7 +157,7 @@ class _Channel3DPainter extends CustomPainter {
     canvas.drawPath(polygon([top[0], top[1], base[1], base[0]]), edge);
     canvas.drawPath(polygon([top[1], top[2], base[2], base[1]]), edge);
 
-    final pct = (waterPercent ?? 0).clamp(0.0, 100.0) / 100.0;
+    final pct = ((waterPercent ?? 0).clamp(0.0, 100.0) / 100.0).toDouble();
     final waterY = 0.42 - pct * 0.76;
     final water = <Offset>[
       project(-1.16, waterY, -0.58),
