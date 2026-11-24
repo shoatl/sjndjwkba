@@ -54,7 +54,7 @@ class AppTheme {
       ),
       titleMedium: baseText.titleMedium?.copyWith(
         fontSize: 16,
-        fontWeight: FontWeight.w650,
+        fontWeight: FontWeight.w600,
         letterSpacing: -0.1,
       ),
       titleSmall: baseText.titleSmall?.copyWith(
