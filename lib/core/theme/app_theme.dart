@@ -37,8 +37,29 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      visualDensity: VisualDensity.standard,
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: mode.surfaceContainerHighest,
+        indicatorColor: mode.primary.withAlpha(28),
+        elevation: 0,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) => TextStyle(
+          fontSize: 11,
+          fontWeight: states.contains(WidgetState.selected) ? FontWeight.w800 : FontWeight.w500,
+          color: states.contains(WidgetState.selected) ? mode.primary : mode.onSurfaceVariant,
+        )),
+        iconTheme: WidgetStateProperty.resolveWith((states) => IconThemeData(
+          color: states.contains(WidgetState.selected) ? mode.primary : mode.onSurfaceVariant,
+        )),
+      ),
       colorScheme: scheme,
       scaffoldBackgroundColor: mode.surface,
+      dividerColor: mode.outlineVariant.withAlpha(130),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: mode.surfaceContainerHighest,
+        contentTextStyle: TextStyle(color: mode.onSurface),
+        behavior: SnackBarBehavior.floating,
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: mode.surface,
         foregroundColor: mode.onSurface,
