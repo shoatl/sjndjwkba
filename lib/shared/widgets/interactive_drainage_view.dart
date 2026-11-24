@@ -37,8 +37,8 @@ class _InteractiveDrainageViewState extends State<InteractiveDrainageView> {
 
     return AppCard(
       title: 'Interactive 3D cutaway',
-      subtitle: 'Drag to orbit · pinch/scroll is not required',
-      trailing: Icon(Icons.threed_rotation_rounded, color: scheme.primary),
+      subtitle: 'Drag to rotate the channel view',
+      trailing: Icon(Icons.view_in_ar_rounded, color: scheme.primary),
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
       child: Column(
         children: [
