@@ -239,6 +239,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -308,7 +309,6 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.colors;
     final bar = Theme.of(context).appBarTheme;
-    final base = bar.backgroundColor ?? scheme.primary;
     final onBase = bar.foregroundColor ?? scheme.onPrimary;
     final text = Theme.of(context).textTheme;
     final top = MediaQuery.of(context).padding.top;
