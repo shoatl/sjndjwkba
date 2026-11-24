@@ -125,9 +125,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final role = widget.session.role;
 
     return Scaffold(
-      backgroundColor: background,
+      backgroundColor: scheme.surface,
       appBar: AppBar(title: const Text('History')),
-      body: _buildBody(context, role),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [scheme.surfaceContainerHighest.withAlpha(105), scheme.surface, scheme.surface],
+          ),
+        ),
+        child: _buildBody(context, role),
+      ),
     );
   }
 
@@ -159,7 +168,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       onRefresh: _refresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(15, 16, 15, 24),
+        padding: const EdgeInsets.fromLTRB(18, 20, 18, 28),
         children: [
           SectionHeading(
             eyebrow: onlyMine ? 'Your incidents' : 'All incidents',
