@@ -240,7 +240,7 @@ class HomeMetricsRow extends StatelessWidget {
     final stale = controller.isStale;
     final stage = node?.waterStage ?? 0;
 
-    String? pct(double? v) => v == null ? null : v.round().toString();
+    String? pct(double? v) => v?.round().toString();
 
     String? powerValue;
     String? powerUnit;
