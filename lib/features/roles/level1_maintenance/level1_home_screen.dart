@@ -24,6 +24,7 @@ import '../../../shared/widgets/metric_tile.dart';
 import '../../../shared/widgets/section_heading.dart';
 import '../../../shared/widgets/sheet_helper.dart';
 import '../../../shared/widgets/top_chrome.dart';
+import '../../../shared/widgets/drainage_system_panel.dart';
 import '../home_controller.dart';
 
 class Level1HomeScreen extends StatelessWidget {
@@ -117,6 +118,12 @@ class Level1HomeScreen extends StatelessWidget {
           _buildStatusCard(context),
           const SizedBox(height: 14),
         ],
+        DrainageSystemPanel(
+          waterPercent: controller.node?.waterLevelPercent,
+          stage: controller.node?.waterStage ?? 0,
+          isStale: controller.isStale,
+        ),
+        const SizedBox(height: 14),
         _buildGaugeCard(context),
         const SizedBox(height: 14),
         _buildMetrics(context),
