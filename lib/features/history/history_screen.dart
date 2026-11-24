@@ -118,10 +118,6 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = context.colors;
-    final background = Color.alphaBlend(
-      scheme.surfaceContainerHighest.withAlpha(90),
-      scheme.surface,
-    );
     final role = widget.session.role;
 
     return Scaffold(
