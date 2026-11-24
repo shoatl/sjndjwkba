@@ -309,44 +309,42 @@ class _DrainageSchematicPainter extends CustomPainter {
     }
     canvas.restore();
 
-    // Three sensor mounts, deliberately schematic and not tied to invented IDs.
-    for (var i = 0; i < 3; i++) {
-      final x = left + 24 + i * ((right - left - 48) / 2);
-      final sensorY = top - 28 - (i == 1 ? 10 : 0);
-      final sensorPaint = Paint()
-        ..color = stale ? muted : cyan
-        ..strokeWidth = 1.5
-        ..style = PaintingStyle.stroke;
-      canvas.drawLine(
-        Offset(x, sensorY + 9),
-        Offset(x, top + 2),
-        sensorPaint,
-      );
-      if (!stale) {
-        canvas.drawCircle(
-          Offset(x, sensorY + 4),
-          9,
-          Paint()..color = cyan.withOpacity(0.12),
-        );
-      }
+    // The application currently monitors one node, so show one sensor mast.
+    final x = (left + right) / 2;
+    final sensorY = top - 28;
+    final sensorPaint = Paint()
+      ..color = stale ? muted : cyan
+      ..strokeWidth = 1.5
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(
+      Offset(x, sensorY + 9),
+      Offset(x, top + 2),
+      sensorPaint,
+    );
+    if (!stale) {
       canvas.drawCircle(
         Offset(x, sensorY + 4),
-        4,
-        Paint()..color = stale ? muted : cyan,
+        9,
+        Paint()..color = cyan.withOpacity(0.12),
       );
-      final label = TextPainter(
-        text: TextSpan(
-          text: 'S${i + 1}',
-          style: TextStyle(
-            color: stale ? muted : cyan,
-            fontSize: 9,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      label.paint(canvas, Offset(x - label.width / 2, sensorY - 12));
     }
+    canvas.drawCircle(
+      Offset(x, sensorY + 4),
+      4,
+      Paint()..color = stale ? muted : cyan,
+    );
+    final nodeLabel = TextPainter(
+      text: TextSpan(
+        text: 'NODE',
+        style: TextStyle(
+          color: stale ? muted : cyan,
+          fontSize: 9,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    nodeLabel.paint(canvas, Offset(x - nodeLabel.width / 2, sensorY - 12));
 
     final label = TextPainter(
       text: TextSpan(
