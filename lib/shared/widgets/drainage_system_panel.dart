@@ -178,7 +178,7 @@ class _DrainageSchematicPainter extends CustomPainter {
     final h = size.height;
     final opacity = stale ? 0.38 : 1.0;
     final gridPaint = Paint()
-      ..color = cyan.withOpacity(0.07 * opacity)
+      ..color = cyan.withValues(alpha: 0.07 * opacity)
       ..strokeWidth = 1;
     for (var x = 12.0; x < w; x += 24) {
       canvas.drawLine(Offset(x, 8), Offset(x, h - 8), gridPaint);
@@ -202,7 +202,7 @@ class _DrainageSchematicPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       shadow,
-      Paint()..color = Colors.black.withOpacity(0.28 * opacity),
+      Paint()..color = Colors.black.withValues(alpha: 0.28 * opacity),
     );
 
     final front = Path()
@@ -216,15 +216,15 @@ class _DrainageSchematicPainter extends CustomPainter {
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
         colors: [
-          Color.lerp(surface, cyan, 0.12)!.withOpacity(opacity),
-          Color.lerp(surface, Colors.black, 0.32)!.withOpacity(opacity),
+          Color.lerp(surface, cyan, 0.12)!.withValues(alpha: opacity),
+          Color.lerp(surface, Colors.black, 0.32)!.withValues(alpha: opacity),
         ],
       ).createShader(Rect.fromLTRB(left, top, right, bottom));
     canvas.drawPath(front, frontPaint);
     canvas.drawPath(
       front,
       Paint()
-        ..color = cyan.withOpacity(0.72 * opacity)
+        ..color = cyan.withValues(alpha: 0.72 * opacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.6,
     );
@@ -237,12 +237,12 @@ class _DrainageSchematicPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       topFace,
-      Paint()..color = Color.lerp(surface, cyan, 0.23)!.withOpacity(opacity),
+      Paint()..color = Color.lerp(surface, cyan, 0.23)!.withValues(alpha: opacity),
     );
     canvas.drawPath(
       topFace,
       Paint()
-        ..color = cyan.withOpacity(0.65 * opacity)
+        ..color = cyan.withValues(alpha: 0.65 * opacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.2,
     );
@@ -255,12 +255,12 @@ class _DrainageSchematicPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       sideFace,
-      Paint()..color = Color.lerp(surface, Colors.black, 0.38)!.withOpacity(opacity),
+      Paint()..color = Color.lerp(surface, Colors.black, 0.38)!.withValues(alpha: opacity),
     );
     canvas.drawPath(
       sideFace,
       Paint()
-        ..color = cyan.withOpacity(0.42 * opacity)
+        ..color = cyan.withValues(alpha: 0.42 * opacity)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1,
     );
@@ -278,7 +278,7 @@ class _DrainageSchematicPainter extends CustomPainter {
       ..close();
     canvas.drawPath(
       waterPath,
-      Paint()..color = water.withOpacity((waterPercent == null ? 0.12 : 0.34) * opacity),
+      Paint()..color = water.withValues(alpha: (waterPercent == null ? 0.12 : 0.34) * opacity),
     );
     final wave = Path();
     for (var x = left; x <= right; x += 4) {
@@ -293,14 +293,14 @@ class _DrainageSchematicPainter extends CustomPainter {
     canvas.drawPath(
       wave,
       Paint()
-        ..color = water.withOpacity(0.9 * opacity)
+        ..color = water.withValues(alpha: 0.9 * opacity)
         ..strokeWidth = 2
         ..style = PaintingStyle.stroke,
     );
 
     // Flow markers travel along the channel without representing sensor data.
     final flowPaint = Paint()
-      ..color = cyan.withOpacity(0.9 * opacity)
+      ..color = cyan.withValues(alpha: 0.9 * opacity)
       ..style = PaintingStyle.fill;
     for (var i = 0; i < 5; i++) {
       final x = left + 18 + ((phase * (right - left - 36) + i * 42) %
@@ -325,7 +325,7 @@ class _DrainageSchematicPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(x, sensorY + 4),
         9,
-        Paint()..color = cyan.withOpacity(0.12),
+        Paint()..color = cyan.withValues(alpha: 0.12),
       );
     }
     canvas.drawCircle(
