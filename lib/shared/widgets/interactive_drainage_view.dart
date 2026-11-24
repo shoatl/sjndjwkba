@@ -144,16 +144,16 @@ class _Channel3DPainter extends CustomPainter {
 
     Path polygon(List<Offset> points) => Path()..addPolygon(points, true);
     final opacity = stale ? 0.42 : 1.0;
-    final shell = Paint()..color = const Color(0xFF17374A).withOpacity(opacity);
-    final side = Paint()..color = const Color(0xFF0B2435).withOpacity(opacity);
+    final shell = Paint()..color = const Color(0xFF17374A).withValues(alpha: opacity);
+    final side = Paint()..color = const Color(0xFF0B2435).withValues(alpha: opacity);
     final edge = Paint()
-      ..color = accent.withOpacity(0.88 * opacity)
+      ..color = accent.withValues(alpha: 0.88 * opacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.7;
 
     canvas.drawPath(polygon([top[1], top[2], base[2], base[1]]), side);
     canvas.drawPath(polygon([top[0], top[1], base[1], base[0]]), shell);
-    canvas.drawPath(polygon(top), Paint()..color = const Color(0xFF21485C).withOpacity(opacity));
+    canvas.drawPath(polygon(top), Paint()..color = const Color(0xFF21485C).withValues(alpha: opacity));
     canvas.drawPath(polygon([top[0], top[1], base[1], base[0]]), edge);
     canvas.drawPath(polygon([top[1], top[2], base[2], base[1]]), edge);
 
@@ -167,10 +167,10 @@ class _Channel3DPainter extends CustomPainter {
     ];
     canvas.drawPath(
       polygon(water),
-      Paint()..color = waterColor.withOpacity((waterPercent == null ? 0.12 : 0.58) * opacity),
+      Paint()..color = waterColor.withValues(alpha: (waterPercent == null ? 0.12 : 0.58) * opacity),
     );
     canvas.drawPath(polygon(water), Paint()
-      ..color = waterColor.withOpacity(opacity)
+      ..color = waterColor.withValues(alpha: opacity)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5);
 
@@ -183,7 +183,7 @@ class _Channel3DPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round);
     canvas.drawCircle(mastTop, 6, Paint()..color = stale ? muted : accent);
     canvas.drawCircle(mastTop, 11, Paint()
-      ..color = (stale ? muted : accent).withOpacity(0.18));
+      ..color = (stale ? muted : accent).withValues(alpha: 0.18));
 
     final label = TextPainter(
       text: TextSpan(
@@ -198,7 +198,7 @@ class _Channel3DPainter extends CustomPainter {
     final level = TextPainter(
       text: TextSpan(
         text: waterPercent == null ? 'NO LEVEL DATA' : '${waterPercent!.round()}%',
-        style: TextStyle(color: Colors.white.withOpacity(opacity),
+        style: TextStyle(color: Colors.white.withValues(alpha: opacity),
           fontSize: 15, fontWeight: FontWeight.w900),
       ),
       textDirection: TextDirection.ltr,
