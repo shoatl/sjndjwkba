@@ -25,7 +25,7 @@ class AppCard extends StatelessWidget {
   });
 
   /// Corner radius shared with the Login and Request Access cards.
-  static const double radius = 16;
+  static const double radius = 18;
 
   /// Card body.
   final Widget child;
@@ -63,7 +63,7 @@ class AppCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _CardHeader(title: title!, subtitle: subtitle, trailing: trailing),
-              Divider(height: 1, thickness: 1, color: scheme.outline.withAlpha(60)),
+              Divider(height: 1, thickness: 1, color: scheme.outline.withAlpha(85)),
               body,
             ],
           )
@@ -75,8 +75,9 @@ class AppCard extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: scheme.shadow.withAlpha(22),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+            blurRadius: 22,
+            spreadRadius: -5,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
@@ -85,7 +86,7 @@ class AppCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(
           borderRadius: borderRadius,
-          side: BorderSide(color: scheme.outline.withAlpha(90)),
+          side: BorderSide(color: scheme.outline.withAlpha(115), width: 0.8),
         ),
         child: InkWell(
           onTap: onTap,
@@ -125,7 +126,7 @@ class _CardHeader extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
