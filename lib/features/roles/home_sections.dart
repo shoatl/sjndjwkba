@@ -21,6 +21,7 @@ import '../../shared/widgets/app_ui.dart';
 import '../../shared/widgets/metric_tile.dart';
 import '../../shared/widgets/sheet_helper.dart';
 import '../../shared/widgets/top_chrome.dart';
+import '../../shared/widgets/drainage_system_panel.dart';
 import 'home_controller.dart';
 
 /// Header + pull-to-refresh + loading, around a list of body widgets.
@@ -187,15 +188,26 @@ class HomeGaugeCard extends StatelessWidget {
     final stale = controller.isStale;
     final stage = controller.node?.waterStage ?? 0;
 
-    return AppCard(
-      title: 'Water stage',
-      subtitle: stale
-          ? 'Last known reading. Not current.'
-          : (stage == 0 ? 'Below Stage 1' : 'Stage $stage of 3'),
-      child: Opacity(
-        opacity: stale ? 0.5 : 1,
-        child: WaterLevelGauge(currentStage: stage),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DrainageSystemPanel(
+          waterPercent: controller.node?.waterLevelPercent,
+          stage: stage,
+          isStale: stale,
+        ),
+        const SizedBox(height: 14),
+        AppCard(
+          title: 'Water stage',
+          subtitle: stale
+              ? 'Last known reading. Not current.'
+              : (stage == 0 ? 'Below Stage 1' : 'Stage $stage of 3'),
+          child: Opacity(
+            opacity: stale ? 0.5 : 1,
+            child: WaterLevelGauge(currentStage: stage),
+          ),
+        ),
+      ],
     );
   }
 }
