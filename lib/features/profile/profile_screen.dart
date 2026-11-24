@@ -7,8 +7,6 @@
 //
 // Level 1 is push only. The SMS fallback switch shows for Level 2 and 3.
 
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../../core/auth/session.dart';
@@ -177,10 +175,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = context.colors;
-    final background = Color.alphaBlend(
-      scheme.surfaceContainerHighest.withAlpha(90),
-      scheme.surface,
-    );
 
     return ListenableBuilder(
       listenable: widget.session,
