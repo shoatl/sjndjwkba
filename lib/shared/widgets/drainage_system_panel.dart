@@ -80,6 +80,7 @@ class _DrainageSystemPanelState extends State<DrainageSystemPanel>
                   cyan: scheme.primary,
                   muted: scheme.onSurfaceVariant,
                   water: stageColor,
+                  stage: widget.stage,
                   waterPercent: percent,
                   phase: _flow.value,
                   stale: widget.isStale,
@@ -155,6 +156,7 @@ class _DrainageSchematicPainter extends CustomPainter {
     required this.cyan,
     required this.muted,
     required this.water,
+    required this.stage,
     required this.waterPercent,
     required this.phase,
     required this.stale,
@@ -165,6 +167,7 @@ class _DrainageSchematicPainter extends CustomPainter {
   final Color cyan;
   final Color muted;
   final Color water;
+  final int stage;
   final double? waterPercent;
   final double phase;
   final bool stale;
