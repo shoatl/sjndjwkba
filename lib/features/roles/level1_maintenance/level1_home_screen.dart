@@ -119,6 +119,10 @@ class Level1HomeScreen extends StatelessWidget {
           _buildStatusCard(context),
           const SizedBox(height: 14),
         ],
+        // Put the live readings before the large drainage visual, matching
+        // the reference layout's scan order: alert, metrics, visualization.
+        _buildMetrics(context),
+        const SizedBox(height: 14),
         DrainageSystemPanel(
           waterPercent: controller.node?.waterLevelPercent,
           stage: controller.node?.waterStage ?? 0,
@@ -132,8 +136,6 @@ class Level1HomeScreen extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         _buildGaugeCard(context),
-        const SizedBox(height: 14),
-        _buildMetrics(context),
         if (alert != null && canRespond) ...[
           const SizedBox(height: 14),
           _buildActions(context, alert),
