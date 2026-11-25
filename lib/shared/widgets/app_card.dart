@@ -1,5 +1,5 @@
-// Shared restrained-glass card used throughout the application.
-// Keep surfaces readable: blur and transparency are subtle, not decorative.
+// lib/shared/widgets/app_card.dart
+// Reusable restrained glass surface for the SCADA interface.
 
 import 'dart:ui';
 
@@ -20,7 +20,7 @@ class AppCard extends StatelessWidget {
     this.semanticLabel,
   });
 
-  static const double radius = 18;
+  static const double radius = 20;
 
   final Widget child;
   final String? title;
@@ -35,33 +35,27 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.colors;
     final borderRadius = BorderRadius.circular(radius);
-    final hasHeader = title != null;
-    final body = Padding(padding: padding, child: child);
 
-    final content = hasHeader
-        ? Column(
+    final content = title == null
+        ? Padding(padding: padding, child: child)
+        : Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _CardHeader(title: title!, subtitle: subtitle, trailing: trailing),
-              Divider(
-                height: 1,
-                thickness: 1,
-                color: scheme.outlineVariant.withAlpha(125),
-              ),
-              body,
+              Divider(height: 1, thickness: 1, color: scheme.outlineVariant.withAlpha(125)),
+              Padding(padding: padding, child: child),
             ],
-          )
-        : body;
+          );
 
     final card = DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: borderRadius,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(32),
-            blurRadius: 22,
-            spreadRadius: -7,
+            color: Colors.black.withAlpha(45),
+            blurRadius: 24,
+            spreadRadius: -8,
             offset: const Offset(0, 10),
           ),
         ],
@@ -72,18 +66,16 @@ class AppCard extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Material(
             color: scheme.surfaceContainerHighest.withAlpha(
-              scheme.brightness == Brightness.dark ? 205 : 238,
+              scheme.brightness == Brightness.dark ? 210 : 238,
             ),
             clipBehavior: Clip.antiAlias,
             shape: RoundedRectangleBorder(
               borderRadius: borderRadius,
-              side: BorderSide(
-                color: scheme.outline.withAlpha(125),
-                width: 0.9,
-              ),
+              side: BorderSide(color: scheme.outline.withAlpha(145), width: 0.9),
             ),
             child: InkWell(
               onTap: onTap,
+              borderRadius: borderRadius,
               child: Stack(
                 fit: StackFit.passthrough,
                 children: [
@@ -91,10 +83,15 @@ class AppCard extends StatelessWidget {
                   if (accent != null)
                     Positioned(
                       left: 0,
-                      top: 0,
-                      bottom: 0,
+                      top: 12,
+                      bottom: 12,
                       width: 3,
-                      child: ColoredBox(color: accent!),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: accent,
+                          borderRadius: const BorderRadius.horizontal(right: Radius.circular(3)),
+                        ),
+                      ),
                     ),
                 ],
               ),
@@ -130,21 +127,10 @@ class _CardHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: text.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.05,
-                  ),
-                ),
+                Text(title, style: text.titleSmall?.copyWith(fontWeight: FontWeight.w800)),
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
-                  Text(
-                    subtitle!,
-                    style: text.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
+                  Text(subtitle!, style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
                 ],
               ],
             ),

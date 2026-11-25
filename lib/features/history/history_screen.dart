@@ -1,9 +1,5 @@
 // lib/features/history/history_screen.dart
-//
-// Role-scoped incident list. The server decides what each role may see:
-// Level 1 gets only incidents they are credited on (shown with a
-// contribution badge), Level 2 and 3 get all of them. Level 3 also sees
-// response-time metrics at the top.
+// Incident history with preserved filtering, search, pagination and alert navigation.
 
 import 'package:flutter/material.dart';
 
@@ -22,13 +18,7 @@ import 'response_metrics.dart';
 enum _HistoryFilter { all, open, cleared }
 
 class HistoryScreen extends StatefulWidget {
-  const HistoryScreen({
-    super.key,
-    required this.session,
-    required this.alerts,
-    required this.onOpenAlert,
-  });
-
+  const HistoryScreen({super.key, required this.session, required this.alerts, required this.onOpenAlert});
   final Session session;
   final AlertRepository alerts;
   final void Function(DrainageAlert alert) onOpenAlert;
@@ -39,8 +29,7 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   static const int _pageSize = 20;
-
-  final List<DrainageAlert> _items = <DrainageAlert>[];
+  final List<DrainageAlert> _items = [];
   bool _loading = true;
   bool _loadingMore = false;
   bool _hasMore = false;
@@ -50,61 +39,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
   String _searchQuery = '';
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
+  void initState() { super.initState(); _refresh(); }
 
   @override
-  void initState() {
-    super.initState();
-    _refresh();
-  }
+  void dispose() { _searchController.dispose(); super.dispose(); }
 
   Future<void> _refresh() async {
     try {
       final page = await widget.alerts.fetchHistory(limit: _pageSize);
       if (!mounted) return;
-      setState(() {
-        _items
-          ..clear()
-          ..addAll(page);
-        _hasMore = page.length >= _pageSize;
-        _error = null;
-        _loading = false;
-      });
+      setState(() { _items..clear()..addAll(page); _hasMore = page.length >= _pageSize; _error = null; _loading = false; });
     } catch (e) {
       if (!mounted) return;
-      if (_items.isEmpty) {
-        setState(() {
-          _error = e;
-          _loading = false;
-        });
-      } else {
-        showAppToast(context, errorText(e));
-      }
+      if (_items.isEmpty) setState(() { _error = e; _loading = false; });
+      else showAppToast(context, errorText(e));
     }
   }
 
   Future<void> _loadMore() async {
     if (_loadingMore || _items.isEmpty) return;
     final before = _items.last.pagingTime;
-    if (before == null) {
-      setState(() => _hasMore = false);
-      return;
-    }
+    if (before == null) { setState(() => _hasMore = false); return; }
     setState(() => _loadingMore = true);
     try {
-      final page = await widget.alerts.fetchHistory(
-        limit: _pageSize,
-        before: before,
-      );
+      final page = await widget.alerts.fetchHistory(limit: _pageSize, before: before);
       if (!mounted) return;
-      setState(() {
-        _items.addAll(page);
-        _hasMore = page.length >= _pageSize;
-        _loadingMore = false;
-      });
+      setState(() { _items.addAll(page); _hasMore = page.length >= _pageSize; _loadingMore = false; });
     } catch (e) {
       if (!mounted) return;
       setState(() => _loadingMore = false);
@@ -122,25 +82,25 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (query.isEmpty) return filtered;
     return filtered.where((alert) {
       final date = alert.startedAt == null ? '' : formatDateTime(alert.startedAt!);
-      return ('Stage ' + alert.stage.toString() + ' ' + alert.status.label + ' ' + date).toLowerCase().contains(query);
+      return ('Stage ${alert.stage} ${alert.status.label} $date').toLowerCase().contains(query);
     }).toList(growable: false);
   }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = context.colors;
     final role = widget.session.role;
+    final scheme = context.colors;
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      appBar: AppBar(title: const Text('History')),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: const Text('Incident History'),
+        actions: [IconButton(onPressed: () {}, tooltip: 'Filter', icon: const Icon(Icons.filter_list_rounded))],
+      ),
       body: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [scheme.surfaceContainerHighest.withAlpha(105), scheme.surface, scheme.surface],
-          ),
+          gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [scheme.primary.withAlpha(12), scheme.surface, scheme.surface]),
         ),
         child: _buildBody(context, role),
       ),
@@ -149,22 +109,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildBody(BuildContext context, UserRole? role) {
     if (_loading) return const Center(child: CircularProgressIndicator());
-
-    if (_error != null) {
-      return EmptyState(
-        icon: Icons.cloud_off_outlined,
-        title: 'Could not load history',
-        message: errorText(_error!),
-        actionLabel: 'Try again',
-        onAction: () {
-          setState(() {
-            _error = null;
-            _loading = true;
-          });
-          _refresh();
-        },
-      );
-    }
+    if (_error != null) return EmptyState(icon: Icons.cloud_off_outlined, title: 'Could not load history', message: errorText(_error!), actionLabel: 'Try again', onAction: () { setState(() { _error = null; _loading = true; }); _refresh(); });
 
     final visible = _visible;
     final mine = widget.session.user?.id;
@@ -178,34 +123,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
       onRefresh: _refresh,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(18, 20, 18, 28),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
         children: [
-          SectionHeading(
-            eyebrow: onlyMine ? 'Your incidents' : 'All incidents',
-            title: 'History',
-            subtitle: onlyMine
-                ? 'Incidents where you are credited.'
-                : 'Newest first.',
-          ),
+          Row(children: [
+            Expanded(child: _SummaryTile(label: 'Total', value: _items.length.toString(), icon: Icons.warning_amber_rounded, color: scheme.primary)),
+            const SizedBox(width: 8),
+            Expanded(child: _SummaryTile(label: 'Open', value: openCount.toString(), icon: Icons.access_time_rounded, color: context.status.stage2)),
+            const SizedBox(width: 8),
+            Expanded(child: _SummaryTile(label: 'Cleared', value: clearedCount.toString(), icon: Icons.check_circle_outline, color: context.status.normal)),
+          ]),
           const SizedBox(height: 14),
-          if (_items.isNotEmpty) ...[
-            Row(
-              children: [
-                Expanded(child: _HistorySummaryTile(label: 'Loaded', value: _items.length.toString(), icon: Icons.receipt_long_outlined, color: scheme.primary)),
-                const SizedBox(width: 8),
-                Expanded(child: _HistorySummaryTile(label: 'Open', value: openCount.toString(), icon: Icons.access_time_rounded, color: context.status.stage2)),
-                const SizedBox(width: 8),
-                Expanded(child: _HistorySummaryTile(label: 'Cleared', value: clearedCount.toString(), icon: Icons.check_circle_outline, color: context.status.normal)),
-              ],
-            ),
-            const SizedBox(height: 14),
-          ],
-          if (showMetrics) ...[
-            _MetricsCard(metrics: ResponseMetrics.from(_items)),
-            const SizedBox(height: 14),
-          ],
+          if (showMetrics) ...[_MetricsCard(metrics: ResponseMetrics.from(_items)), const SizedBox(height: 14)],
           AppCard(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: TextField(
               controller: _searchController,
               onChanged: (value) => setState(() => _searchQuery = value),
@@ -213,82 +143,36 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 icon: const Icon(Icons.search_rounded),
                 hintText: 'Search incidents...',
                 border: InputBorder.none,
-                suffixIcon: _searchQuery.isEmpty ? null : IconButton(
-                  tooltip: 'Clear search',
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                  },
-                  icon: const Icon(Icons.close_rounded),
-                ),
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                suffixIcon: _searchQuery.isEmpty ? null : IconButton(tooltip: 'Clear search', onPressed: () { _searchController.clear(); setState(() => _searchQuery = ''); }, icon: const Icon(Icons.close_rounded)),
               ),
             ),
           ),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: [
-              for (final f in _HistoryFilter.values)
-                ChoiceChip(
-                  label: Text(_filterLabel(f)),
-                  selected: _filter == f,
-                  onSelected: (_) => setState(() => _filter = f),
-                ),
+          Row(children: [
+            for (final filter in _HistoryFilter.values) ...[
+              if (filter != _HistoryFilter.values.first) const SizedBox(width: 8),
+              Expanded(child: _FilterChip(label: _filterLabel(filter), selected: _filter == filter, onTap: () => setState(() => _filter = filter))),
             ],
-          ),
+          ]),
           const SizedBox(height: 14),
           if (visible.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 24),
-              child: EmptyState(
-                icon: Icons.history_rounded,
-                title: _items.isEmpty ? 'No incidents yet' : 'Nothing here',
-                message: _items.isEmpty
-                    ? (onlyMine
-                        ? 'Incidents you take part in will show up here.'
-                        : 'Past incidents will show up here.')
-                    : 'No incidents match this filter.',
-              ),
-            )
+            EmptyState(icon: Icons.history_rounded, title: _items.isEmpty ? 'No incidents yet' : 'Nothing here', message: _items.isEmpty ? (onlyMine ? 'Incidents you take part in will show up here.' : 'Past incidents will show up here.') : 'No incidents match this filter.')
           else
-            for (final alert in visible) ...[
-              _IncidentCard(
-                alert: alert,
-                contribution: mine == null ? null : alert.contributionOf(mine),
-                onTap: () => widget.onOpenAlert(alert),
-              ),
-              const SizedBox(height: 12),
-            ],
+            for (final alert in visible) ...[_IncidentCard(alert: alert, contribution: mine == null ? null : alert.contributionOf(mine), onTap: () => widget.onOpenAlert(alert)), const SizedBox(height: 12)],
           if (_hasMore)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: OutlinedButton(
-                onPressed: _loadingMore ? null : _loadMore,
-                style: bigOutlinedStyle(),
-                child: _loadingMore
-                    ? const ButtonSpinner(onFilled: false)
-                    : const Text('Load more'),
-              ),
-            ),
+            Padding(padding: const EdgeInsets.only(top: 4), child: OutlinedButton(onPressed: _loadingMore ? null : _loadMore, child: _loadingMore ? const ButtonSpinner(onFilled: false) : const Text('Load more'))),
         ],
       ),
     );
   }
 
-  String _filterLabel(_HistoryFilter f) {
-    switch (f) {
-      case _HistoryFilter.all:
-        return 'All';
-      case _HistoryFilter.open:
-        return 'Open';
-      case _HistoryFilter.cleared:
-        return 'Cleared';
-    }
-  }
+  String _filterLabel(_HistoryFilter f) => switch (f) { _HistoryFilter.all => 'All', _HistoryFilter.open => 'Open', _HistoryFilter.cleared => 'Cleared' };
 }
 
-class _HistorySummaryTile extends StatelessWidget {
-  const _HistorySummaryTile({required this.label, required this.value, required this.icon, required this.color});
+class _SummaryTile extends StatelessWidget {
+  const _SummaryTile({required this.label, required this.value, required this.icon, required this.color});
   final String label;
   final String value;
   final IconData icon;
@@ -297,76 +181,25 @@ class _HistorySummaryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return AppCard(
-      padding: const EdgeInsets.fromLTRB(11, 13, 11, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 19),
-          const SizedBox(height: 8),
-          Text(value, style: text.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: color, fontFeatures: const [FontFeature.tabularFigures()])),
-          const SizedBox(height: 2),
-          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
-        ],
-      ),
-    );
+    return AppCard(padding: const EdgeInsets.fromLTRB(12, 13, 12, 12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Icon(icon, color: color, size: 20), const SizedBox(height: 8), Text(value, style: text.titleLarge?.copyWith(fontWeight: FontWeight.w900, color: color, fontFeatures: const [FontFeature.tabularFigures()])), const SizedBox(height: 2), Text(label, style: text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant))]));
   }
 }
 
-class _MetricsCard extends StatelessWidget {
-  const _MetricsCard({required this.metrics});
-
-  final ResponseMetrics metrics;
+class _FilterChip extends StatelessWidget {
+  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      title: 'Response metrics',
-      subtitle: 'From the ${metrics.total} incidents loaded',
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: MetricTile(
-                  label: 'To acknowledge',
-                  value: metrics.averageAcknowledge == null
-                      ? null
-                      : formatDuration(metrics.averageAcknowledge!),
-                  icon: Icons.timer_outlined,
-                  caption: 'Average',
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: MetricTile(
-                  label: 'To clear',
-                  value: metrics.averageClear == null
-                      ? null
-                      : formatDuration(metrics.averageClear!),
-                  icon: Icons.task_alt_rounded,
-                  caption: 'Average',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          InfoRow(label: 'Unacknowledged', value: '${metrics.unacknowledged}'),
-          InfoRow(label: 'Still open', value: '${metrics.active}'),
-        ],
-      ),
-    );
+    final scheme = context.colors;
+    return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(999), child: Container(height: 42, alignment: Alignment.center, decoration: BoxDecoration(color: selected ? scheme.primary : scheme.surfaceContainerHighest.withAlpha(170), borderRadius: BorderRadius.circular(999), border: Border.all(color: selected ? scheme.primary : scheme.outline.withAlpha(120)), boxShadow: selected ? [BoxShadow(color: scheme.primary.withAlpha(36), blurRadius: 12)] : null), child: Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: selected ? scheme.onPrimary : scheme.onSurfaceVariant, fontWeight: FontWeight.w700))));
   }
 }
 
 class _IncidentCard extends StatelessWidget {
-  const _IncidentCard({
-    required this.alert,
-    required this.contribution,
-    required this.onTap,
-  });
-
+  const _IncidentCard({required this.alert, required this.contribution, required this.onTap});
   final DrainageAlert alert;
   final Contribution? contribution;
   final VoidCallback onTap;
@@ -376,68 +209,26 @@ class _IncidentCard extends StatelessWidget {
     final scheme = context.colors;
     final text = Theme.of(context).textTheme;
     final started = alert.startedAt;
-    final ack = alert.acknowledgedBy;
-    final cleared = alert.clearedBy;
+    final color = alertColor(context, alert);
 
-    final String ackLine;
-    if (ack != null) {
-      final took = alert.timeToAcknowledge;
-      ackLine = took == null
-          ? 'Acknowledged at ${formatClock(ack.at)}'
-          : 'Acknowledged in ${formatDuration(took)}';
-    } else if (cleared != null) {
-      ackLine = 'Cleared on site, not acknowledged';
-    } else {
-      ackLine = 'Not acknowledged';
-    }
+    return AppCard(accent: color, onTap: onTap, semanticLabel: 'Stage ${alert.stage} incident, ${alert.status.label}. Open details.', padding: const EdgeInsets.fromLTRB(14, 12, 14, 12), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Row(children: [AppPill(label: alert.status.label, color: color), const Spacer(), if (started != null) Text(formatDateTime(started), style: text.labelSmall?.copyWith(color: scheme.onSurfaceVariant))]),
+      const SizedBox(height: 11),
+      Text('Stage ${alert.stage} alert', style: text.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+      const SizedBox(height: 4),
+      Text(alert.status.isActive ? 'Current incident status: ${alert.status.label}' : 'Cleared and archived', style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+      const SizedBox(height: 10),
+      Row(children: [if (contribution != null) AppPill(label: contribution!.label, icon: Icons.person_outline), const Spacer(), Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant)]),
+    ]));
+  }
+}
 
-    return AppCard(
-      accent: alertColor(context, alert),
-      onTap: onTap,
-      semanticLabel: 'Stage ${alert.stage} incident, ${alert.status.label}. '
-          'Open details.',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Stage ${alert.stage} alert',
-                  style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
-              Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
-            ],
-          ),
-          if (started != null)
-            Text(
-              formatDateTime(started),
-              style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-            ),
-          const SizedBox(height: 10),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              AppPill(
-                label: alert.status.label,
-                color: alertColor(context, alert),
-              ),
-              if (contribution != null)
-                AppPill(
-                  label: contribution!.label,
-                  icon: Icons.person_outline,
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            ackLine,
-            style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-          ),
-        ],
-      ),
-    );
+class _MetricsCard extends StatelessWidget {
+  const _MetricsCard({required this.metrics});
+  final ResponseMetrics metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(title: 'Response metrics', subtitle: 'From the ${metrics.total} incidents loaded', child: Row(children: [Expanded(child: MetricTile(label: 'To acknowledge', value: metrics.averageAcknowledge == null ? null : formatDuration(metrics.averageAcknowledge!), icon: Icons.timer_outlined, caption: 'Average')), const SizedBox(width: 10), Expanded(child: MetricTile(label: 'To clear', value: metrics.averageClear == null ? null : formatDuration(metrics.averageClear!), icon: Icons.task_alt_rounded, caption: 'Average'))]));
   }
 }
