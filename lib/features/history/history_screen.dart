@@ -46,6 +46,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   bool _hasMore = false;
   Object? _error;
   _HistoryFilter _filter = _HistoryFilter.all;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -105,14 +113,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   List<DrainageAlert> get _visible {
-    switch (_filter) {
-      case _HistoryFilter.all:
-        return _items;
-      case _HistoryFilter.open:
-        return _items.where((a) => a.status.isActive).toList(growable: false);
-      case _HistoryFilter.cleared:
-        return _items.where((a) => !a.status.isActive).toList(growable: false);
-    }
+    final filtered = switch (_filter) {
+      _HistoryFilter.all => _items,
+      _HistoryFilter.open => _items.where((a) => a.status.isActive).toList(growable: false),
+      _HistoryFilter.cleared => _items.where((a) => !a.status.isActive).toList(growable: false),
+    };
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return filtered;
+    return filtered.where((alert) {
+      final date = alert.startedAt == null ? '' : formatDateTime(alert.startedAt!);
+      return ('Stage ' + alert.stage.toString() + ' ' + alert.status.label + ' ' + date).toLowerCase().contains(query);
+    }).toList(growable: false);
   }
 
   @override
@@ -157,6 +168,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     final visible = _visible;
     final mine = widget.session.user?.id;
+    final scheme = context.colors;
+    final openCount = _items.where((a) => a.status.isActive).length;
+    final clearedCount = _items.length - openCount;
     final showMetrics = role == UserRole.level3 && _items.isNotEmpty;
     final onlyMine = !(role?.seesAllHistory ?? false);
 
@@ -174,10 +188,43 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 : 'Newest first.',
           ),
           const SizedBox(height: 14),
+          if (_items.isNotEmpty) ...[
+            Row(
+              children: [
+                Expanded(child: _HistorySummaryTile(label: 'Loaded', value: _items.length.toString(), icon: Icons.receipt_long_outlined, color: scheme.primary)),
+                const SizedBox(width: 8),
+                Expanded(child: _HistorySummaryTile(label: 'Open', value: openCount.toString(), icon: Icons.access_time_rounded, color: context.status.stage2)),
+                const SizedBox(width: 8),
+                Expanded(child: _HistorySummaryTile(label: 'Cleared', value: clearedCount.toString(), icon: Icons.check_circle_outline, color: context.status.normal)),
+              ],
+            ),
+            const SizedBox(height: 14),
+          ],
           if (showMetrics) ...[
             _MetricsCard(metrics: ResponseMetrics.from(_items)),
             const SizedBox(height: 14),
           ],
+          AppCard(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) => setState(() => _searchQuery = value),
+              decoration: InputDecoration(
+                icon: const Icon(Icons.search_rounded),
+                hintText: 'Search incidents...',
+                border: InputBorder.none,
+                suffixIcon: _searchQuery.isEmpty ? null : IconButton(
+                  tooltip: 'Clear search',
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() => _searchQuery = '');
+                  },
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             children: [
@@ -237,6 +284,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
       case _HistoryFilter.cleared:
         return 'Cleared';
     }
+  }
+}
+
+class _HistorySummaryTile extends StatelessWidget {
+  const _HistorySummaryTile({required this.label, required this.value, required this.icon, required this.color});
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return AppCard(
+      padding: const EdgeInsets.fromLTRB(11, 13, 11, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 19),
+          const SizedBox(height: 8),
+          Text(value, style: text.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: color, fontFeatures: const [FontFeature.tabularFigures()])),
+          const SizedBox(height: 2),
+          Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.labelSmall?.copyWith(color: context.colors.onSurfaceVariant)),
+        ],
+      ),
+    );
   }
 }
 
