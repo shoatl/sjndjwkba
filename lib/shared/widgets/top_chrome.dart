@@ -1,19 +1,14 @@
 // lib/shared/widgets/top_chrome.dart
-//
-// The header block at the top of the role Home screens, like the navy
-// header in the simulation: connection chip, brand, and the signed-in
-// person's role badge and name.
-//
-// Colors come from the app bar theme (so it follows the active palette)
-// and from context.status for the connection dot. No logos: the brand
-// mark is a plain icon.
+// Shared field-dashboard header: connection state, product identity, greeting,
+// and the signed-in user's real role. It intentionally does not fabricate
+// notifications or navigation actions that the app does not currently have.
 
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';
 
-/// Whether the node is reporting. Stale means "No recent data", which is
-/// not an all-clear.
+/// Whether the node is reporting. Stale means "No recent data", which is not
+/// an all-clear.
 enum ChromeConnection { live, stale }
 
 class TopChrome extends StatelessWidget {
@@ -28,89 +23,161 @@ class TopChrome extends StatelessWidget {
   });
 
   final ChromeConnection connection;
-
-  /// Short role label shown on the account chip, such as "L1" or "ADMIN".
   final String roleBadge;
-
   final String userName;
-
   final String title;
-
-  /// One short line under the title, such as "Field Operations".
   final String? subtitle;
-
-  /// Tapping the account chip, for example to open Profile.
   final VoidCallback? onAccountTap;
 
   @override
   Widget build(BuildContext context) {
     final scheme = context.colors;
-    final bar = Theme.of(context).appBarTheme;
-    final base = scheme.surfaceContainerHighest;
-    final onBase = bar.foregroundColor ?? scheme.onPrimary;
     final text = Theme.of(context).textTheme;
     final top = MediaQuery.of(context).padding.top;
+    final live = connection == ChromeConnection.live;
+    final statusColor = live ? context.status.normal : context.status.stale;
+    final trimmedName = userName.trim();
+    final initial = trimmedName.isEmpty
+        ? '?'
+        : String.fromCharCode(trimmedName.runes.first).toUpperCase();
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(18, top + 10, 18, 16),
+      padding: EdgeInsets.fromLTRB(18, top + 12, 18, 16),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: scheme.outline.withAlpha(110))),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [base.withAlpha(248), scheme.surface],
+          colors: [
+            Color.alphaBlend(scheme.primary.withAlpha(20), scheme.surfaceContainerHighest),
+            scheme.surface,
+          ],
         ),
+        border: Border(bottom: BorderSide(color: scheme.outline.withAlpha(105))),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ConnectionChip(connection: connection, onBase: onBase),
-          const SizedBox(height: 14),
           Row(
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: onBase.withAlpha(30),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: onBase.withAlpha(50)),
+                  color: scheme.primary.withAlpha(24),
+                  borderRadius: BorderRadius.circular(13),
+                  border: Border.all(color: scheme.primary.withAlpha(90)),
                 ),
-                child: Icon(Icons.water_drop_outlined, color: onBase, size: 21),
+                child: Icon(Icons.water_drop_rounded, color: scheme.primary, size: 25),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 11),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: text.titleMedium?.copyWith(
-                        color: onBase,
-                        fontWeight: FontWeight.w700,
+                      'LORA',
+                      style: text.labelSmall?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.4,
                       ),
                     ),
-                    if (subtitle != null)
+                    Text(
+                      title.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.15,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _ConnectionPill(label: live ? 'LIVE' : 'NO RECENT DATA', color: statusColor),
+            ],
+          ),
+          const SizedBox(height: 17),
+          Row(
+            children: [
+              Container(
+                width: 46,
+                height: 46,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: scheme.primary.withAlpha(20),
+                  border: Border.all(color: scheme.primary.withAlpha(170), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(color: scheme.primary.withAlpha(24), blurRadius: 14),
+                  ],
+                ),
+                child: Text(
+                  initial,
+                  style: text.titleMedium?.copyWith(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Monitoring overview',
+                      style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      trimmedName.isEmpty ? 'Welcome' : trimmedName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
                       Text(
                         subtitle!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: text.bodySmall?.copyWith(
-                          color: onBase.withAlpha(190),
-                        ),
+                        style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
                       ),
+                    ],
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
-              _AccountChip(
-                roleBadge: roleBadge,
-                userName: userName,
-                onBase: onBase,
-                onTap: onAccountTap,
+              const SizedBox(width: 8),
+              Material(
+                color: scheme.primary.withAlpha(18),
+                borderRadius: BorderRadius.circular(999),
+                child: InkWell(
+                  onTap: onAccountTap,
+                  borderRadius: BorderRadius.circular(999),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: scheme.primary.withAlpha(90)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.verified_user_outlined, size: 14, color: scheme.primary),
+                        const SizedBox(width: 6),
+                        Text(
+                          roleBadge,
+                          style: text.labelSmall?.copyWith(
+                            color: scheme.onSurface,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
@@ -120,140 +187,40 @@ class TopChrome extends StatelessWidget {
   }
 }
 
-class _ConnectionChip extends StatelessWidget {
-  const _ConnectionChip({required this.connection, required this.onBase});
+class _ConnectionPill extends StatelessWidget {
+  const _ConnectionPill({required this.label, required this.color});
 
-  final ChromeConnection connection;
-  final Color onBase;
+  final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final live = connection == ChromeConnection.live;
-    final dot = live ? context.status.normal : context.status.stale;
-    final label = live ? 'Live' : 'No recent data';
-
-    return Semantics(
-      label: 'Node connection: $label',
-      excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: onBase.withAlpha(26),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: onBase.withAlpha(46)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
-            ),
-            const SizedBox(width: 7),
-            Text(
-              label,
-              style: text.labelMedium?.copyWith(
-                color: onBase,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withAlpha(22),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withAlpha(90)),
       ),
-    );
-  }
-}
-
-class _AccountChip extends StatelessWidget {
-  const _AccountChip({
-    required this.roleBadge,
-    required this.userName,
-    required this.onBase,
-    this.onTap,
-  });
-
-  final String roleBadge;
-  final String userName;
-  final Color onBase;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final trimmed = userName.trim();
-    final initial = trimmed.isEmpty
-        ? '?'
-        : String.fromCharCode(trimmed.runes.first).toUpperCase();
-
-    return Semantics(
-      button: onTap != null,
-      label: 'Account: $userName, $roleBadge',
-      excludeSemantics: true,
-      child: Material(
-        color: onBase.withAlpha(26),
-        borderRadius: BorderRadius.circular(10),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          onTap: onTap,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 48),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: onBase.withAlpha(56)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 26,
-                  height: 26,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: onBase,
-                    borderRadius: BorderRadius.circular(7),
-                  ),
-                  child: Text(
-                    initial,
-                    style: text.labelMedium?.copyWith(
-                      color: Theme.of(context).appBarTheme.backgroundColor ??
-                          context.colors.primary,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      roleBadge,
-                      style: text.labelSmall?.copyWith(
-                        color: onBase,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.8,
-                      ),
-                    ),
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 84),
-                      child: Text(
-                        userName,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: text.labelSmall?.copyWith(
-                          color: onBase.withAlpha(200),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: text.labelSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.35,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
