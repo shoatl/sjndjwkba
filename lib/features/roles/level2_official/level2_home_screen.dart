@@ -86,9 +86,10 @@ class Level2HomeScreen extends StatelessWidget {
         HomeStatusCard(controller: controller),
         const SizedBox(height: 14),
       ],
-      HomeGaugeCard(controller: controller),
-      const SizedBox(height: 14),
+      // Surface live readings before the larger drainage visualization.
       HomeMetricsRow(controller: controller),
+      const SizedBox(height: 14),
+      HomeGaugeCard(controller: controller),
       if (alert != null && canRespond) ...[
         const SizedBox(height: 14),
         HomeActionsCard(
