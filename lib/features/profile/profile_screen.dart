@@ -175,22 +175,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = context.colors;
-    final background = Color.alphaBlend(
-      scheme.surfaceContainerHighest.withAlpha(90),
-      scheme.surface,
-    );
 
     return ListenableBuilder(
       listenable: widget.session,
       builder: (context, _) {
         final user = widget.session.user;
         return Scaffold(
-          backgroundColor: background,
+          backgroundColor: scheme.surface,
           appBar: AppBar(title: const Text('Profile')),
           body: user == null
               ? const SizedBox.shrink()
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(15, 16, 15, 28),
+              : Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [scheme.surfaceContainerHighest.withAlpha(105), scheme.surface, scheme.surface],
+                    ),
+                  ),
+                  child: ListView(
+                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 32),
                   children: [
                     const SectionHeading(eyebrow: 'Account', title: 'Profile'),
                     const SizedBox(height: 14),
@@ -230,6 +234,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
+              ),
         );
       },
     );
@@ -390,29 +395,74 @@ class _AccountCard extends StatelessWidget {
     final scheme = context.colors;
     final text = Theme.of(context).textTheme;
 
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Identity is a dedicated hero card, separate from account metadata.
+        AppCard(
+          padding: const EdgeInsets.fromLTRB(18, 22, 18, 20),
+          child: Column(
             children: [
-              PersonAvatar(name: user.name, size: 56),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.name,
-                      style: text.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [
+                      scheme.primary,
+                      scheme.primary.withAlpha(75),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.primary.withAlpha(35),
+                      blurRadius: 20,
+                      spreadRadius: 1,
                     ),
-                    const SizedBox(height: 4),
+                  ],
+                ),
+                child: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest,
+                    shape: BoxShape.circle,
+                  ),
+                  child: PersonAvatar(name: user.name, size: 76),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                user.name,
+                textAlign: TextAlign.center,
+                style: text.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.35,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 13,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: scheme.primary.withAlpha(22),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: scheme.primary.withAlpha(95)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.verified_user_outlined,
+                        size: 15, color: scheme.primary),
+                    const SizedBox(width: 7),
                     Text(
                       user.role.label,
-                      style: text.bodyMedium?.copyWith(
-                        color: scheme.onSurfaceVariant,
+                      style: text.labelMedium?.copyWith(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
@@ -420,22 +470,25 @@ class _AccountCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Divider(height: 1),
-          const SizedBox(height: 8),
-          if (user.phone != null)
-            InfoRow(label: 'Phone', value: user.phone!),
-          InfoRow(
-            label: 'Role',
-            value: user.role.plainLabel,
+        ),
+        const SizedBox(height: 12),
+        AppCard(
+          title: 'Account information',
+          subtitle: 'Your registered account details',
+          child: Column(
+            children: [
+              if (user.phone != null)
+                InfoRow(label: 'Phone', value: user.phone!),
+              InfoRow(label: 'Role', value: user.role.plainLabel),
+              if (user.serviceSpans.isNotEmpty)
+                InfoRow(
+                  label: 'In service since',
+                  value: formatDate(user.serviceSpans.last.start),
+                ),
+            ],
           ),
-          if (user.serviceSpans.isNotEmpty)
-            InfoRow(
-              label: 'In service since',
-              value: formatDate(user.serviceSpans.last.start),
-            ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

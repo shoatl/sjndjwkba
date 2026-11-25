@@ -1,11 +1,7 @@
-// lib/shared/widgets/app_card.dart
-//
-// The standard card used across the app: thin border, soft shadow, optional
-// header, optional colored edge, optional tap. No business logic.
-//
-// Colors come only from context.colors. Pass [accent] from the caller
-// (for example context.status.stage2) when the card needs a colored edge,
-// and always show the meaning in words too, not by color alone.
+// Shared restrained-glass card used throughout the application.
+// Keep surfaces readable: blur and transparency are subtle, not decorative.
+
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
@@ -24,36 +20,21 @@ class AppCard extends StatelessWidget {
     this.semanticLabel,
   });
 
-  /// Corner radius shared with the Login and Request Access cards.
-  static const double radius = 16;
+  static const double radius = 18;
 
-  /// Card body.
   final Widget child;
-
-  /// Optional header. Shown above a thin divider.
   final String? title;
   final String? subtitle;
-
-  /// Optional widget at the right of the header, such as a status pill.
   final Widget? trailing;
-
-  /// Padding around [child].
   final EdgeInsetsGeometry padding;
-
-  /// Optional colored strip on the left edge.
   final Color? accent;
-
-  /// Makes the whole card tappable.
   final VoidCallback? onTap;
-
-  /// Spoken label for screen readers when the card is tappable.
   final String? semanticLabel;
 
   @override
   Widget build(BuildContext context) {
     final scheme = context.colors;
     final borderRadius = BorderRadius.circular(radius);
-
     final hasHeader = title != null;
     final body = Padding(padding: padding, child: child);
 
@@ -63,7 +44,11 @@ class AppCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _CardHeader(title: title!, subtitle: subtitle, trailing: trailing),
-              Divider(height: 1, thickness: 1, color: scheme.outline.withAlpha(60)),
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: scheme.outlineVariant.withAlpha(125),
+              ),
               body,
             ],
           )
@@ -74,34 +59,46 @@ class AppCard extends StatelessWidget {
         borderRadius: borderRadius,
         boxShadow: [
           BoxShadow(
-            color: scheme.shadow.withAlpha(22),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+            color: Colors.black.withAlpha(32),
+            blurRadius: 22,
+            spreadRadius: -7,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Material(
-        color: scheme.surface,
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: borderRadius,
-          side: BorderSide(color: scheme.outline.withAlpha(90)),
-        ),
-        child: InkWell(
-          onTap: onTap,
-          child: Stack(
-            fit: StackFit.passthrough,
-            children: [
-              content,
-              if (accent != null)
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 4,
-                  child: ColoredBox(color: accent!),
-                ),
-            ],
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: scheme.surfaceContainerHighest.withAlpha(
+              scheme.brightness == Brightness.dark ? 205 : 238,
+            ),
+            clipBehavior: Clip.antiAlias,
+            shape: RoundedRectangleBorder(
+              borderRadius: borderRadius,
+              side: BorderSide(
+                color: scheme.outline.withAlpha(125),
+                width: 0.9,
+              ),
+            ),
+            child: InkWell(
+              onTap: onTap,
+              child: Stack(
+                fit: StackFit.passthrough,
+                children: [
+                  content,
+                  if (accent != null)
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 3,
+                      child: ColoredBox(color: accent!),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -125,7 +122,7 @@ class _CardHeader extends StatelessWidget {
     final text = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -135,10 +132,13 @@ class _CardHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: text.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                  style: text.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.05,
+                  ),
                 ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle!,
                     style: text.bodySmall?.copyWith(

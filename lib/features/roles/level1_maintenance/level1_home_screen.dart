@@ -24,6 +24,8 @@ import '../../../shared/widgets/metric_tile.dart';
 import '../../../shared/widgets/section_heading.dart';
 import '../../../shared/widgets/sheet_helper.dart';
 import '../../../shared/widgets/top_chrome.dart';
+import '../../../shared/widgets/drainage_system_panel.dart';
+import '../../../shared/widgets/interactive_drainage_view.dart';
 import '../home_controller.dart';
 
 class Level1HomeScreen extends StatelessWidget {
@@ -117,9 +119,23 @@ class Level1HomeScreen extends StatelessWidget {
           _buildStatusCard(context),
           const SizedBox(height: 14),
         ],
-        _buildGaugeCard(context),
-        const SizedBox(height: 14),
+        // Put the live readings before the large drainage visual, matching
+        // the reference layout's scan order: alert, metrics, visualization.
         _buildMetrics(context),
+        const SizedBox(height: 14),
+        DrainageSystemPanel(
+          waterPercent: controller.node?.waterLevelPercent,
+          stage: controller.node?.waterStage ?? 0,
+          isStale: controller.isStale,
+        ),
+        const SizedBox(height: 14),
+        InteractiveDrainageView(
+          waterPercent: controller.node?.waterLevelPercent,
+          stage: controller.node?.waterStage ?? 0,
+          isStale: controller.isStale,
+        ),
+        const SizedBox(height: 14),
+        _buildGaugeCard(context),
         if (alert != null && canRespond) ...[
           const SizedBox(height: 14),
           _buildActions(context, alert),
@@ -223,7 +239,7 @@ class Level1HomeScreen extends StatelessWidget {
     final stale = controller.isStale;
     final stage = node?.waterStage ?? 0;
 
-    String? pct(double? v) => v == null ? null : v.round().toString();
+    String? pct(double? v) => v?.round().toString();
 
     // Power: show what the node reports, in words.
     String? powerValue;

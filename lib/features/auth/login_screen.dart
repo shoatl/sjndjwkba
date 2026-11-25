@@ -8,6 +8,8 @@
 // Colors: only context.colors, context.status, and the app bar theme.
 // No logos. The brand mark is a plain icon.
 
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../../core/auth/session.dart';
@@ -130,21 +132,25 @@ class _LoginScreenState extends State<LoginScreen> {
     final scheme = context.colors;
     final text = Theme.of(context).textTheme;
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: scheme.outline.withAlpha(90)),
-        boxShadow: [
-          BoxShadow(
-            color: scheme.shadow.withAlpha(28),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(22),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest.withAlpha(224),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: scheme.primary.withAlpha(75)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(35),
+                blurRadius: 28,
+                offset: const Offset(0, 12),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: AutofillGroup(
+          child: AutofillGroup(
         child: Form(
           key: _formKey,
           child: Column(
@@ -230,7 +236,9 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
+          ),
         ),
+      ),
       ),
     );
   }
@@ -301,7 +309,6 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.colors;
     final bar = Theme.of(context).appBarTheme;
-    final base = bar.backgroundColor ?? scheme.primary;
     final onBase = bar.foregroundColor ?? scheme.onPrimary;
     final text = Theme.of(context).textTheme;
     final top = MediaQuery.of(context).padding.top;
@@ -314,7 +321,7 @@ class _Header extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [base, Color.lerp(base, scheme.primary, 0.4) ?? base],
+          colors: [scheme.surfaceContainerHighest, scheme.surface],
         ),
       ),
       child: Column(

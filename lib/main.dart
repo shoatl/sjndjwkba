@@ -34,7 +34,7 @@ class _DrainageAppState extends State<DrainageApp> {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
+      themeMode: ThemeMode.dark,
       home: AuthGate(
         session: _session,
         repository: _auth,

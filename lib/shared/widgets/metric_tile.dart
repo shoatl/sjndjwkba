@@ -9,8 +9,6 @@
 // Put tiles in a Row with Expanded, or in a GridView. The tile does not
 // choose its own width.
 
-import 'dart:ui' show FontFeature;
-
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_theme.dart';

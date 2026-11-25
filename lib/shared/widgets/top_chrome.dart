@@ -46,7 +46,7 @@ class TopChrome extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = context.colors;
     final bar = Theme.of(context).appBarTheme;
-    final base = bar.backgroundColor ?? scheme.primary;
+    final base = scheme.surfaceContainerHighest;
     final onBase = bar.foregroundColor ?? scheme.onPrimary;
     final text = Theme.of(context).textTheme;
     final top = MediaQuery.of(context).padding.top;
@@ -55,10 +55,11 @@ class TopChrome extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(18, top + 10, 18, 16),
       decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: scheme.outline.withAlpha(110))),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [base, Color.lerp(base, scheme.primary, 0.4) ?? base],
+          colors: [base.withAlpha(248), scheme.surface],
         ),
       ),
       child: Column(
